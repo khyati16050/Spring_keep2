@@ -2,9 +2,11 @@ package com.stackroute.keepnote.dao;
 
 import java.util.List;
 
+import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 
 import com.stackroute.keepnote.model.Note;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /*
  * This class is implementing the NoteDAO interface. This class has to be annotated with @Repository
@@ -21,9 +23,17 @@ public class NoteDAOImpl implements NoteDAO {
 	/*
 	 * Autowiring should be implemented for the SessionFactory.
 	 */
-
+	@Autowired SessionFactory sessionFactory;
 	public NoteDAOImpl(SessionFactory sessionFactory) {
+		this.sessionFactory = sessionFactory;
+	}
 
+	public SessionFactory getSessionFactory() {
+		return sessionFactory;
+	}
+
+	public void setSessionFactory(SessionFactory sessionFactory) {
+		this.sessionFactory = sessionFactory;
 	}
 
 	/*
@@ -31,7 +41,8 @@ public class NoteDAOImpl implements NoteDAO {
 	 */
 
 	public boolean saveNote(Note note) {
-		return false;
+		this.sessionFactory.getCurrentSession().save(note);
+		return true;
 
 	}
 
@@ -40,7 +51,15 @@ public class NoteDAOImpl implements NoteDAO {
 	 */
 
 	public boolean deleteNote(int noteId) {
-		return false;
+		if(getNoteById(noteId)!=null)
+		{
+			this.sessionFactory.getCurrentSession().delete(getNoteById(noteId));
+			return true;
+		}
+		else
+		{
+			return  false;
+		}
 
 	}
 
@@ -49,7 +68,9 @@ public class NoteDAOImpl implements NoteDAO {
 	 * order(showing latest note first)
 	 */
 	public List<Note> getAllNotes() {
-		return null;
+
+		List result = getSessionFactory().getCurrentSession().createQuery("FROM Note note ORDER BY note.createdAt DESC").getResultList();
+		return result;
 
 	}
 
@@ -57,14 +78,25 @@ public class NoteDAOImpl implements NoteDAO {
 	 * retrieve specific note from the database(note) table
 	 */
 	public Note getNoteById(int noteId) {
-		return null;
+
+		Note note = sessionFactory.getCurrentSession().get(Note.class,noteId);
+		return note;
 
 	}
 
 	/* Update existing note */
 
 	public boolean UpdateNote(Note note) {
-		return false;
+
+		if(getNoteById(note.getNoteId())!=null)
+		{
+		sessionFactory.getCurrentSession().update(note);
+			return true;
+		}
+		else
+		{
+			return false;
+		}
 
 	}
 
